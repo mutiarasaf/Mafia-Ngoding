@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.title("Settings")
 st.write("This page allows you gto cuztomize your preferences.")
