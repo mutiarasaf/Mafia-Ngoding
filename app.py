@@ -6,7 +6,8 @@ st.title("Analisis Indikator Pembangunan 34 Provinsi (2014–2024)")
 # ================================
 # 1. LOAD DATA CSV
 # ================================
-df = pd.read_csv("dataindikatorpembangunan.csv")
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
+
 
 # ================================
 # 2. RESHAPE: UBAH WIDE → LONG
@@ -43,7 +44,8 @@ data_long["Tahun"] = data_long["Tahun"].astype(int)
 # ================================
 # 3. FILTER USER INPUT
 # ================================
-provinsi_list = sorted(df["Provinsi"].unique())
+provinsi_list = sorted(df["Provinsi"].dropna().astype(str).unique())
+
 provinsi_dipilih = st.selectbox("Pilih Provinsi:", provinsi_list)
 
 indikator = st.selectbox("Pilih Indikator:", ["PDRB", "TPT", "IPM"])
