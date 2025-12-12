@@ -7,7 +7,8 @@ st.title("Dashboard Data Indikator Pembangunan")
 # -----------------------------------------------------------
 # 1. BACA DATASET SEKALI SAJA
 # -----------------------------------------------------------
-df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv") st.write("📌 Daftar kolom di dataset:")
+st.write(df.columns.tolist())
 
 # Normalisasi kolom
 df.columns = df.columns.str.lower().str.strip()
@@ -33,11 +34,11 @@ else:
 # 4. UBAH DATASET KE BENTUK LONG AGAR MUDAH DIFILTER DAN DIGRAFIKKAN
 # -----------------------------------------------------------
 df_long = df.melt(
-    id_vars=["provinsi", "indikator"],
-    value_vars=tahun_cols,
-    var_name="tahun",
-    value_name="nilai"
+    id_vars=['Provinsi'],  # pake kolom yang benar
+    var_name='Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi',
+    value_name='2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'
 )
+
 
 # Pastikan tahun menjadi angka
 df_long["tahun"] = df_long["tahun"].astype(int)
