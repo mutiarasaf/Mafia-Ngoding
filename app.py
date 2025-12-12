@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 
 st.title("Dashboard Data Pembangunan Indonesia")
 
+
 # Tampilkan seluruh data agar terlihat struktur
 st.subheader("📄 Data Asli")
 st.dataframe(df)
-
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
+print(df.columns)
 # ------------------------
 # DETEKSI KOLOM TAHUN
 # ------------------------
