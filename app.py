@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 # -----------------------------
 # READ FULL DATASET
 # -----------------------------
-df = os.chdir(r"C:\Mafia-Ngoding")
-pd.read_csv(r"C:\Mafia-Ngoding\dataindikatorpembangunan.csv")
+df = pd.read_csv(r"C:\Mafia-Ngoding\dataindikatorpembangunan.csv")
 
 
 st.title("Dashboard Data Indikator Pembangunan")
