@@ -7,7 +7,8 @@ st.title("Dashboard Data Indikator Pembangunan")
 # -----------------------------------------------------------
 # 1. BACA DATASET SEKALI SAJA
 # -----------------------------------------------------------
-df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv") st.write("📌 Daftar kolom di dataset:")
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv") 
+st.write("📌 Daftar kolom di dataset:")
 st.write(df.columns.tolist())
 
 # Normalisasi kolom
