@@ -41,8 +41,7 @@ df = pd.read_csvprint(df.columns)
 
 # Pilih indikator yang ingin ditampilkan
 indikator_list = ['Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi']
-df_selected = df.columns = 
-df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
+df_selected = df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
 
 # Normalisasi nama kolom
 df.columns = df.columns.str.lower().str.replace(" ", "_")
