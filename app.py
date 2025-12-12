@@ -41,8 +41,15 @@ df = pd.read_csvprint(df.columns)
 
 # Pilih indikator yang ingin ditampilkan
 indikator_list = ['Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi']
-df_selected = df.columns = df.columns.str.strip().str.lower()
-print(df.columns) df[df['indikator'].isin(indikator_list)]
+df_selected = df.columns = 
+df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
+
+# Normalisasi nama kolom
+df.columns = df.columns.str.lower().str.replace(" ", "_")
+
+print(df.columns)  # cek dulu
+
+df_selected = df[df['indikator'].isin(indikator_list)]
 
 # Plot
 plt.figure(figsize=(12,5))
