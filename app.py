@@ -2,14 +2,18 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-st.title("Dashboard Data Pembangunan Indonesia")
-
-
-# Tampilkan seluruh data agar terlihat struktur
-st.subheader("📄 Data Asli")
-st.dataframe(df)
+# -----------------------------------
+# 1. BACA DATA (HARUS PALING ATAS)
+# -----------------------------------
 df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
-print(df.columns)
+
+# -----------------------------------
+# 2. TAMPILKAN DASHBOARD
+# -----------------------------------
+st.title("Dashboard Data Indikator Pembangunan")
+
+st.subheader("📄 Seluruh Data")
+st.dataframe(df)
 # ------------------------
 # DETEKSI KOLOM TAHUN
 # ------------------------
