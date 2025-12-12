@@ -1,68 +1,96 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
-df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
+st.title("Dashboard Data Pembangunan Indonesia")
 
-st.title("Dashboard Data Indikator Pembangunan")
+# Tampilkan seluruh data agar terlihat struktur
+st.subheader("📄 Data Asli")
+st.dataframe(df)
 
-# -------------------------
-# 1. DEFINE TAHUN
-# -------------------------
-tahun_cols = [str(y) for y in range(2014, 2025)]
+# ------------------------
+# DETEKSI KOLOM TAHUN
+# ------------------------
+tahun_cols = [col for col in df.columns if isinstance(col, int)]
 
-# -------------------------
-# 2. SPLIT BLOK DATA
-# -------------------------
-# PDRB = kolom 1–11 (Provinsi + 2014–2024)
-pdrb_cols = ['Provinsi'] + tahun_cols
-df_pdrb = df[pdrb_cols].copy()
-df_pdrb['indikator'] = 'PDRB ADHK 2010'
+# Pastikan urut
+tahun_cols = sorted(tahun_cols)
 
-# TPT = kolom berikutnya
-tpt_start = len(pdrb_cols)
-tpt_cols = ['Provinsi'] + list(df.columns[tpt_start:tpt_start+len(tahun_cols)])
-df_tpt = df[tpt_cols].copy()
-df_tpt.columns = ['Provinsi'] + tahun_cols
-df_tpt['indikator'] = 'Tingkat Pengangguran Terbuka'
+st.write("Kolom tahun terdeteksi:", tahun_cols)
 
-# IPM = blok ketiga
-ipm_start = tpt_start + len(tahun_cols)
-ipm_cols = ['Provinsi'] + list(df.columns[ipm_start:ipm_start+len(tahun_cols)])
-df_ipm = df[ipm_cols].copy()
-df_ipm.columns = ['Provinsi'] + tahun_cols
-df_ipm['indikator'] = 'Indeks Pembangunan Manusia'
+# ------------------------
+# BAGI MENJADI 3 VARIABEL
+# ------------------------
+pdrb_cols = tahun_cols[0:11]     # 2014-2024 PDRB
+tpt_cols  = tahun_cols[11:22]    # 2014-2024 TPT
+ipm_cols  = tahun_cols[22:33]    # 2014-2024 IPM
 
-# -------------------------
-# 3. MELT SEMUA BLOK
-# -------------------------
-df_long_pdrb = df_pdrb.melt(
-    id_vars=['Provinsi', 'indikator'],
-    value_vars=tahun_cols,
+# ------------------------
+# MELT MASING-MASING VARIABEL
+# ------------------------
+df_pdrb = df.melt(
+    id_vars=['Provinsi'],
+    value_vars=pdrb_cols,
     var_name='tahun',
-    value_name='nilai'
+    value_name='pdrb'
 )
 
-df_long_tpt = df_tpt.melt(
-    id_vars=['Provinsi', 'indikator'],
-    value_vars=tahun_cols,
+df_tpt = df.melt(
+    id_vars=['Provinsi'],
+    value_vars=tpt_cols,
     var_name='tahun',
-    value_name='nilai'
+    value_name='tpt'
 )
 
-df_long_ipm = df_ipm.melt(
-    id_vars=['Provinsi', 'indikator'],
-    value_vars=tahun_cols,
+df_ipm = df.melt(
+    id_vars=['Provinsi'],
+    value_vars=ipm_cols,
     var_name='tahun',
-    value_name='nilai'
+    value_name='ipm'
 )
 
-# -------------------------
-# 4. GABUNGKAN
-# -------------------------
-df_long = pd.concat([df_long_pdrb, df_long_tpt, df_long_ipm], ignore_index=True)
+# ------------------------
+# GABUNG SEMUA DATA
+# ------------------------
+df_all = df_pdrb.merge(df_tpt, on=['Provinsi','tahun'])
+df_all = df_all.merge(df_ipm, on=['Provinsi','tahun'])
 
-st.subheader("📄 Data Long Format")
-st.dataframe(df_long)
+st.subheader("📊 Data Long Format")
+st.dataframe(df_all)
+
+# ------------------------
+# FILTER PROVINSI
+# ------------------------
+provinsi_list = df['Provinsi'].unique()
+prov_select = st.selectbox("Pilih Provinsi", provinsi_list)
+
+df_selected = df_all[df_all['Provinsi'] == prov_select]
+
+# ------------------------
+# GRAFIK
+# ------------------------
+st.subheader(f"📈 Grafik Pembangunan - {prov_select}")
+
+fig, ax = plt.subplots()
+ax.plot(df_selected['tahun'], df_selected['pdrb'], label="PDRB (Miliar Rp)")
+ax.set_xlabel("Tahun")
+ax.set_ylabel("Nilai PDRB")
+ax.legend()
+st.pyplot(fig)
+
+fig, ax = plt.subplots()
+ax.plot(df_selected['tahun'], df_selected['tpt'], label="Tingkat Pengangguran Terbuka (%)")
+ax.set_xlabel("Tahun")
+ax.set_ylabel("TPT (%)")
+ax.legend()
+st.pyplot(fig)
+
+fig, ax = plt.subplots()
+ax.plot(df_selected['tahun'], df_selected['ipm'], label="Indeks Pembangunan Manusia")
+ax.set_xlabel("Tahun")
+ax.set_ylabel("IPM")
+ax.legend()
+st.pyplot(fig)
 
 pages = [
     st.Page(page="pages/page1.py", title="Home", icon="🏡"),
