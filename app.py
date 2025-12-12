@@ -35,17 +35,27 @@ st.dataframe(df_selected)
 # -----------------------------
 st.subheader("📊 Visualisasi Bar Chart")
 
-# SESUAIKAN kolom indikator yg mau ditampilkan
-# contoh: 'tahun' sebagai x dan 'nilai' sebagai bar
-plt.figure(figsize=(10, 5))
-df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
-df.columns = df.columns.str.strip().str.lower()
+# Baca dataset
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
 
+# Pilih indikator yang ingin ditampilkan
+indikator_list = ['Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi']
+
+df_selected = df[df['indikator'].isin(indikator_list)]
+
+# Plot
+plt.figure(figsize=(12,5))
+
+for indikator in indikator_list:
+    subset = df_selected[df_selected['indikator'] == indikator]
+    plt.bar(subset['tahun'], subset['nilai'], label=indikator)
+
+plt.title("Perbandingan PDB, TPT, dan IPM per Tahun")
 plt.xlabel("Tahun")
 plt.ylabel("Nilai Indikator")
-plt.title(f"Bar Chart Indikator Pembangunan - {pilihan_provinsi}")
-
-st.pyplot(plt)
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 pages = [
     st.Page(page="pages/page1.py", title="Home", icon="🏡"),
