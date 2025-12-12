@@ -36,7 +36,7 @@ st.dataframe(df_selected)
 st.subheader("📊 Visualisasi Bar Chart")
 
 # Baca dataset
-df = pd.read_csv("C:/Mafia-Ngoding/data/indikatorpembangunan.csv"); print(df.columns)
+df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv"); print(df.columns)
 
 # Pilih indikator yang ingin ditampilkan
 indikator_list = ['Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi']
