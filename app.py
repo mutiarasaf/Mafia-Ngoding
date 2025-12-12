@@ -34,14 +34,15 @@ else:
 # -----------------------------------------------------------
 # 4. UBAH DATASET KE BENTUK LONG AGAR MUDAH DIFILTER DAN DIGRAFIKKAN
 # -----------------------------------------------------------
-tahun_cols = ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024']
-
 df_long = df.melt(
-    id_vars=['Provinsi'],        
-    value_vars=tahun_cols,       
-    var_name='Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi',            
-    value_name='nilai'           
+    id_vars=['Provinsi', 'Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 
+             'Data tingkat pengangguran di Indonesia (Per Agustus)',
+             'Indeks Pembangunan Manusia Menurut Provinsi'],
+    value_vars=tahun_cols,
+    var_name='tahun',
+    value_name='nilai'
 )
+
 
 
 # Pastikan tahun menjadi angka
