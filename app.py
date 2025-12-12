@@ -32,7 +32,7 @@ tahun = ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','
 pdrb_cols = tahun
 tpt_cols = df.columns[1+11 : 1+11+11].tolist()
 ipm_cols = df.columns[1+22 : 1+22+11].tolist()
-
+pdrb_cols = [col for col in df.columns if col.isdigit() and 2014 <= int(col) <= 2024]
 df_pdrb = df[['provinsi'] + pdrb_cols]
 df_tpt  = df[['provinsi'] + tpt_cols]
 df_ipm  = df[['provinsi'] + ipm_cols]
