@@ -2,77 +2,96 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ========================================
-# (Tambahan) AGAR SEMUA DATA TAMPIL PENUH
-# ========================================
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-# ========================================
-# 1. BACA DATA
-# ========================================
+st.title("Dashboard Data Indikator Pembangunan")
+
+# -----------------------------------------------------------
+# 1. BACA DATASET SEKALI SAJA
+# -----------------------------------------------------------
 df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
 
-# ========================================
-# 2. NORMALISASI NAMA KOLOM
-# ========================================
-df.columns = df.columns.str.strip()
-df.rename(columns={"Provinsi": "provinsi"}, inplace=True)
+# Normalisasi kolom
+df.columns = df.columns.str.lower().str.strip()
 
-# ========================================
-# 3. TENTUKAN JUMLAH TAHUN (2014–2024 = 11 tahun)
-# ========================================
-tahun = ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024']
+# -----------------------------------------------------------
+# 2. TAMPILKAN SELURUH DATA (FULL, NO HEAD/TAIL)
+# -----------------------------------------------------------
+st.subheader("📄 Seluruh Data (Tanpa Dipotong)")
+st.dataframe(df)
 
-# ========================================
-# 4. IDENTIFIKASI KOLOM BERDASARKAN URUTAN
-# ========================================
-# Asumsi format:
-# Provinsi | 11 kolom PDRB | 11 kolom TPT | 11 kolom IPM
+# -----------------------------------------------------------
+# 3. CEK KATEGORI DATA
+#    Jika format seperti Excel (tahun 2014–2024 jadi kolom)
+# -----------------------------------------------------------
+tahun_cols = [col for col in df.columns if col.isdigit()]
 
-pdrb_cols = tahun
-tpt_cols = df.columns[1+11 : 1+11+11].tolist()
-ipm_cols = df.columns[1+22 : 1+22+11].tolist()
-pdrb_cols = [col for col in df.columns if col.isdigit() and 2014 <= int(col) <= 2024]
-df_pdrb = df[['provinsi'] + pdrb_cols]
-df_tpt  = df[['provinsi'] + tpt_cols]
-df_ipm  = df[['provinsi'] + ipm_cols]
+if not tahun_cols:
+    st.error("Kolom tahun tidak ditemukan! Pastikan dataset memiliki kolom 2014–2024.")
+else:
+    tahun_cols = sorted(tahun_cols)
 
-# ========================================
-# 5. UBAH KE LONG FORMAT
-# ========================================
-df_pdrb_long = df_pdrb.melt(id_vars='provinsi', var_name='tahun', value_name='pdrb')
-df_tpt_long  = df_tpt.melt(id_vars='provinsi', var_name='tahun', value_name='tpt')
-df_ipm_long  = df_ipm.melt(id_vars='provinsi', var_name='tahun', value_name='ipm')
+# -----------------------------------------------------------
+# 4. UBAH DATASET KE BENTUK LONG AGAR MUDAH DIFILTER DAN DIGRAFIKKAN
+# -----------------------------------------------------------
+df_long = df.melt(
+    id_vars=["provinsi", "indikator"],
+    value_vars=tahun_cols,
+    var_name="tahun",
+    value_name="nilai"
+)
 
-# ========================================
-# 6. GABUNG SEMUA INDIKATOR MENJADI SATU DATAFRAME
-# ========================================
-df_all = df_pdrb_long.merge(df_tpt_long, on=['provinsi','tahun'])
-df_all = df_all.merge(df_ipm_long, on=['provinsi','tahun'])
+# Pastikan tahun menjadi angka
+df_long["tahun"] = df_long["tahun"].astype(int)
 
-# ========================================
-# 7. GRAFIK UNTUK 34 PROVINSI
-# ========================================
+# -----------------------------------------------------------
+# 5. FILTER PROVINSI
+# -----------------------------------------------------------
+st.subheader("🔍 Pilih Provinsi")
+provinsi_list = df_long["provinsi"].unique()
+pilihan_provinsi = st.selectbox("Pilih Provinsi:", provinsi_list)
 
-provinsi_list = df_all['provinsi'].unique()
+df_selected = df_long[df_long["provinsi"] == pilihan_provinsi]
 
-for prov in provinsi_list:
-    d = df_all[df_all['provinsi'] == prov]
+st.write(f"### Data untuk Provinsi: *{pilihan_provinsi}*")
+st.dataframe(df_selected)
 
-    plt.figure(figsize=(12,7))
-    plt.plot(d['tahun'], d['pdrb'], marker='o', label='PDRB')
-    plt.plot(d['tahun'], d['tpt'], marker='o', label='Tingkat Pengangguran')
-    plt.plot(d['tahun'], d['ipm'], marker='o', label='IPM')
-    
-    plt.title(f"Tren PDRB, Pengangguran, dan IPM – {prov}")
-    plt.xlabel("Tahun")
-    plt.ylabel("Nilai")
-    plt.xticks(rotation=45)
-    plt.grid(True, linestyle='--', alpha=0.5)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+# -----------------------------------------------------------
+# 6. PILIH INDIKATOR
+# -----------------------------------------------------------
+st.subheader("📌 Pilih Indikator")
+indikator_list = df_long["indikator"].unique()
+pilihan_indikator = st.multiselect(
+    "Pilih indikator:",
+    indikator_list,
+    default=[
+        indikator_list[0]
+    ]
+)
 
+df_plot = df_selected[df_selected["indikator"].isin(pilihan_indikator)]
+
+# -----------------------------------------------------------
+# 7. VISUALISASI BAR CHART
+# -----------------------------------------------------------
+st.subheader("📊 Visualisasi Bar Chart")
+
+if df_plot.empty:
+    st.warning("Tidak ada data untuk indikator yang dipilih.")
+else:
+    fig, ax = plt.subplots(figsize=(12, 5))
+
+    for indikator in pilihan_indikator:
+        subset = df_plot[df_plot["indikator"] == indikator]
+        ax.bar(subset["tahun"], subset["nilai"], label=indikator)
+
+    ax.set_title(f"Grafik Indikator untuk Provinsi {pilihan_provinsi}")
+    ax.set_xlabel("Tahun")
+    ax.set_ylabel("Nilai")
+    ax.legend()
+    st.pyplot(fig)
+
+# -----------------------------------------------------------
+# 8. NAVIGASI HALAMAN
+# -----------------------------------------------------------
 
 pages = [
     st.Page(page="pages/page1.py", title="Home", icon="🏡"),
