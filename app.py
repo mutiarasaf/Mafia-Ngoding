@@ -38,21 +38,21 @@ ipm_cols  = tahun_cols[22:33]    # 2014-2024 IPM
 df_pdrb = df.melt(
     id_vars=['Provinsi'],
     value_vars=pdrb_cols,
-    var_name= 2014,2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
     value_name='pdrb'
 )
 
 df_tpt = df.melt(
     id_vars=['Provinsi'],
     value_vars=tpt_cols,
-    var_name= 2014,2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
     value_name='tpt'
 )
 
 df_ipm = df.melt(
     id_vars=['Provinsi'],
     value_vars=ipm_cols,
-    var_name= 2014,2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
+    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
     value_name='ipm'
 )
 
