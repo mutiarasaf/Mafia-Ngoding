@@ -24,9 +24,8 @@ tahun_cols = sorted(tahun-cols)
 tahun_cols = sorted(tahun_cols)
 
 st.write("Kolom tahun terdeteksi:", tahun_cols)
-tahun_cols = [
-    '2014','2015','2016','2017','2018',
-    '2019','2020','2021','2022','2023','2024'
+tahun_cols = [str(t) for t in range(2014, 2024)]
+
 ]
 # ------------------------
 # BAGI MENJADI 3 VARIABEL
