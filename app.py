@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # 1. BACA DATA (HARUS PALING ATAS)
 # -----------------------------------
 df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
+st.write(df.columns.tolist())
 
 # -----------------------------------
 # 2. TAMPILKAN DASHBOARD
