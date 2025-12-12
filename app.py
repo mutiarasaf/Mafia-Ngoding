@@ -14,18 +14,21 @@ st.title("Dashboard Data Indikator Pembangunan")
 
 st.subheader("📄 Seluruh Data")
 st.dataframe(df)
-# ------------------------
-# DETEKSI KOLOM TAHUN
-# ------------------------
-tahun_cols = [col for col in df.columns if col.isdigit()]
-tahun_cols = sorted(tahun-cols)
+# -----------------------------
+# LIST TAHUN (2014–2024)
+# -----------------------------
+tahun_cols = [
+    '2014','2015','2016','2017','2018','2019','2020',
+    '2021','2022','2023','2024'
+]
 
-# Pastikan urut
-tahun_cols = sorted(tahun_cols)
-
-st.write("Kolom tahun terdeteksi:", tahun_cols)
-tahun_cols = [str(t) for t in range(2014, 2024)]
-
+# -----------------------------
+# LIST INDIKATOR
+# -----------------------------
+indikator_list = [
+    "Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)",
+    "Tingkat Pengangguran Terbuka (persen)",
+    "Indeks Pembangunan Manusia"
 ]
 # ------------------------
 # BAGI MENJADI 3 VARIABEL
