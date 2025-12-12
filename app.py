@@ -36,7 +36,7 @@ st.dataframe(df_selected)
 st.subheader("📊 Visualisasi Bar Chart")
 
 # Baca dataset
-df = pd.read_csv print(df.columns)
+df = pd.read_csvprint(df.columns)
 (r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
 
 # Pilih indikator yang ingin ditampilkan
