@@ -38,7 +38,9 @@ st.subheader("📊 Visualisasi Bar Chart")
 # SESUAIKAN kolom indikator yg mau ditampilkan
 # contoh: 'tahun' sebagai x dan 'nilai' sebagai bar
 plt.figure(figsize=(10, 5))
-plt.bar(df_selected['tahun'], df_selected['nilai'])
+df = pd.read_csv("C:/Mafia-Ngoding/dataindikatorpembangunan.csv")
+df.columns = df.columns.str.strip().str.lower()
+
 plt.xlabel("Tahun")
 plt.ylabel("Nilai Indikator")
 plt.title(f"Bar Chart Indikator Pembangunan - {pilihan_provinsi}")
