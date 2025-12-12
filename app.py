@@ -20,7 +20,9 @@ st.dataframe(df)    # tampilkan seluruh data, bukan head/tail
 # FILTER PROVINSI
 # -----------------------------
 st.subheader("🔍 Pilih Provinsi")
-provinsi_list = df['provinsi'].unique()   # kolom harus bernama “provinsi”
+df.columns = df.columns.str.lower().str.strip()
+provinsi_list = df['provinsi'].unique()
+   # kolom harus bernama “provinsi”
 pilihan_provinsi = st.selectbox("Pilih Provinsi:", provinsi_list)
 
 df_selected = df[df['provinsi'] == pilihan_provinsi]
