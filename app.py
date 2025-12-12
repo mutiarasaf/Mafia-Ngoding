@@ -2,66 +2,77 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# -----------------------------
-# READ FULL DATASET
-# -----------------------------
+# ========================================
+# (Tambahan) AGAR SEMUA DATA TAMPIL PENUH
+# ========================================
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+# ========================================
+# 1. BACA DATA
+# ========================================
 df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
 
+# ========================================
+# 2. NORMALISASI NAMA KOLOM
+# ========================================
+df.columns = df.columns.str.strip()
+df.rename(columns={"Provinsi": "provinsi"}, inplace=True)
 
-st.title("Dashboard Data Indikator Pembangunan")
+# ========================================
+# 3. TENTUKAN JUMLAH TAHUN (2014–2024 = 11 tahun)
+# ========================================
+tahun = ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024']
 
-# -----------------------------
-# SHOW FULL DATA
-# -----------------------------
-st.subheader("📄 Seluruh Data")
-st.dataframe(df)    # tampilkan seluruh data, bukan head/tail
+# ========================================
+# 4. IDENTIFIKASI KOLOM BERDASARKAN URUTAN
+# ========================================
+# Asumsi format:
+# Provinsi | 11 kolom PDRB | 11 kolom TPT | 11 kolom IPM
 
-# -----------------------------
-# FILTER PROVINSI
-# -----------------------------
-st.subheader("🔍 Pilih Provinsi")
-df.columns = df.columns.str.lower().str.strip()
-provinsi_list = df['provinsi'].unique()
-   # kolom harus bernama “provinsi”
-pilihan_provinsi = st.selectbox("Pilih Provinsi:", provinsi_list)
+pdrb_cols = tahun
+tpt_cols = df.columns[1+11 : 1+11+11].tolist()
+ipm_cols = df.columns[1+22 : 1+22+11].tolist()
 
-df_selected = df[df['provinsi'] == pilihan_provinsi]
+df_pdrb = df[['provinsi'] + pdrb_cols]
+df_tpt  = df[['provinsi'] + tpt_cols]
+df_ipm  = df[['provinsi'] + ipm_cols]
 
-st.write(f"### Data untuk Provinsi: *{pilihan_provinsi}*")
-st.dataframe(df_selected)
+# ========================================
+# 5. UBAH KE LONG FORMAT
+# ========================================
+df_pdrb_long = df_pdrb.melt(id_vars='provinsi', var_name='tahun', value_name='pdrb')
+df_tpt_long  = df_tpt.melt(id_vars='provinsi', var_name='tahun', value_name='tpt')
+df_ipm_long  = df_ipm.melt(id_vars='provinsi', var_name='tahun', value_name='ipm')
 
-# -----------------------------
-# VISUALISASI BAR CHART
-# -----------------------------
-st.subheader("📊 Visualisasi Bar Chart")
+# ========================================
+# 6. GABUNG SEMUA INDIKATOR MENJADI SATU DATAFRAME
+# ========================================
+df_all = df_pdrb_long.merge(df_tpt_long, on=['provinsi','tahun'])
+df_all = df_all.merge(df_ipm_long, on=['provinsi','tahun'])
 
-# Baca dataset
-df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv"); print(df.columns)
+# ========================================
+# 7. GRAFIK UNTUK 34 PROVINSI
+# ========================================
 
-# Pilih indikator yang ingin ditampilkan
-indikator_list = ['Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)', 'Data tingkat pengangguran di Indonesia (Per Agustus)', 'Indeks Pembangunan Manusia Menurut Provinsi']
-df_selected = df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
+provinsi_list = df_all['provinsi'].unique()
 
-# Normalisasi nama kolom
-df.columns = df.columns.str.lower().str.replace(" ", "_")
+for prov in provinsi_list:
+    d = df_all[df_all['provinsi'] == prov]
 
-print(df.columns)  # cek dulu
+    plt.figure(figsize=(12,7))
+    plt.plot(d['tahun'], d['pdrb'], marker='o', label='PDRB')
+    plt.plot(d['tahun'], d['tpt'], marker='o', label='Tingkat Pengangguran')
+    plt.plot(d['tahun'], d['ipm'], marker='o', label='IPM')
+    
+    plt.title(f"Tren PDRB, Pengangguran, dan IPM – {prov}")
+    plt.xlabel("Tahun")
+    plt.ylabel("Nilai")
+    plt.xticks(rotation=45)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
-df_selected = df[df['indikator'].isin(indikator_list)]
-
-# Plot
-plt.figure(figsize=(12,5))
-
-for indikator in indikator_list:
-    subset = df_selected[df_selected['indikator'] == indikator]
-    plt.bar(subset['tahun'], subset['nilai'], label=indikator)
-
-plt.title("Perbandingan PDB, TPT, dan IPM per Tahun")
-plt.xlabel("Tahun")
-plt.ylabel("Nilai Indikator")
-plt.legend()
-plt.tight_layout()
-plt.show()
 
 pages = [
     st.Page(page="pages/page1.py", title="Home", icon="🏡"),
