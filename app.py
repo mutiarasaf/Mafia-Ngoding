@@ -14,22 +14,17 @@ st.title("Dashboard Data Indikator Pembangunan")
 
 st.subheader("📄 Seluruh Data")
 st.dataframe(df)
-# -----------------------------
-# LIST TAHUN (2014–2024)
-# -----------------------------
-tahun_cols = [
-    '2014','2015','2016','2017','2018','2019','2020',
-    '2021','2022','2023','2024'
-]
+# ------------------------
+# DETEKSI KOLOM TAHUN
+# ------------------------
+tahun_cols = [col for col in df.columns if col.isdigit()]
+tahun_cols = sorted(tahun-cols)
 
-# -----------------------------
-# LIST INDIKATOR
-# -----------------------------
-indikator_list = [
-    "Produk Domestik Bruto/Produk Domestik Regional Bruto Atas Dasar Harga Konstan 2010 (miliar rupiah) (Miliar Rp)",
-    "Tingkat Pengangguran Terbuka (persen)",
-    "Indeks Pembangunan Manusia"
-]
+# Pastikan urut
+tahun_cols = sorted(tahun_cols)
+
+st.write("Kolom tahun terdeteksi:", tahun_cols)
+
 # ------------------------
 # BAGI MENJADI 3 VARIABEL
 # ------------------------
@@ -38,16 +33,14 @@ tpt_cols  = tahun_cols[11:22]    # 2014-2024 TPT
 ipm_cols  = tahun_cols[22:33]    # 2014-2024 IPM
 
 # ------------------------
-# MELT + KONVERSI TAHUN KE INT
+# MELT MASING-MASING VARIABEL
 # ------------------------
-
 df_pdrb = df.melt(
     id_vars=['Provinsi'],
     value_vars=pdrb_cols,
     var_name='tahun',
     value_name='pdrb'
 )
-df_pdrb['tahun'] = df_pdrb['tahun'].astype(int)
 
 df_tpt = df.melt(
     id_vars=['Provinsi'],
@@ -55,7 +48,6 @@ df_tpt = df.melt(
     var_name='tahun',
     value_name='tpt'
 )
-df_tpt['tahun'] = df_tpt['tahun'].astype(int)
 
 df_ipm = df.melt(
     id_vars=['Provinsi'],
@@ -63,7 +55,6 @@ df_ipm = df.melt(
     var_name='tahun',
     value_name='ipm'
 )
-df_ipm['tahun'] = df_ipm['tahun'].astype(int)
 
 # ------------------------
 # GABUNG SEMUA DATA
