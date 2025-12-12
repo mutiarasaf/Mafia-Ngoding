@@ -17,7 +17,7 @@ st.dataframe(df)
 # ------------------------
 # DETEKSI KOLOM TAHUN
 # ------------------------
-tahun_cols = [col for col in df.columns if col(col, int)]
+tahun_cols = [col for col in df.columns if isinstance(col, int)]
 
 # Pastikan urut
 tahun_cols = sorted(tahun_cols)
