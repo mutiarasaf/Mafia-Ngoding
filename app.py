@@ -33,28 +33,32 @@ tpt_cols  = tahun_cols[11:22]    # 2014-2024 TPT
 ipm_cols  = tahun_cols[22:33]    # 2014-2024 IPM
 
 # ------------------------
-# MELT MASING-MASING VARIABEL
+# MELT + KONVERSI TAHUN KE INT
 # ------------------------
+
 df_pdrb = df.melt(
     id_vars=['Provinsi'],
     value_vars=pdrb_cols,
-    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+    var_name=2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
     value_name='pdrb'
 )
+df_pdrb['tahun'] = df_pdrb['tahun'].astype(int)
 
 df_tpt = df.melt(
     id_vars=['Provinsi'],
     value_vars=tpt_cols,
-    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+    var_name=2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
     value_name='tpt'
 )
+df_tpt['tahun'] = df_tpt['tahun'].astype(int)
 
 df_ipm = df.melt(
     id_vars=['Provinsi'],
     value_vars=ipm_cols,
-    var_name= 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+    var_name=2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
     value_name='ipm'
 )
+df_ipm['tahun'] = df_ipm['tahun'].astype(int)
 
 # ------------------------
 # GABUNG SEMUA DATA
