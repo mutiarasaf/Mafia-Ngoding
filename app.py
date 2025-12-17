@@ -1,154 +1,115 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
-st.title("Analisis Indikator Pembangunan 34 Provinsi (2014–2024)")
+st.set_page_config(page_title="Indikator Pembangunan", layout="wide")
 
-# ================================
-# 1. LOAD DATA CSV
-# ================================
-df = pd.read_csv(r"C:\Mafia-Ngoding\data\dataindikatorpembangunan.csv")
-
+st.title("📊 Analisis Indikator Pembangunan 34 Provinsi (2014–2024)")
 
 # ================================
-# 2. RESHAPE: UBAH WIDE → LONG
+# 1. LOAD DATA
 # ================================
-# Deteksi otomatis kolom PDRB / TPT / IPM berdasarkan prefix
-pdrb_cols = [col for col in df.columns if col.isdigit() and int(col) >= 2014 and int(col) <= 2024]
+df = pd.read_csv("data/dataindikatorpembangunan.csv")
 
-# PDRB kolom ada 2014–2024 pertama → ambil 11 pertama
+st.subheader("📄 Data Mentah (CSV)")
+st.dataframe(df, use_container_width=True)
+
+# ================================
+# 2. RESHAPE DATA (WIDE → LONG)
+# ================================
 pdrb_cols = df.columns[1:12]
+tpt_cols  = df.columns[12:23]
+ipm_cols  = df.columns[23:34]
 
-# TPT kolom 2014–2024 kedua → ambil 11 berikutnya
-tpt_cols = df.columns[12:23]
+pdrb_long = df.melt(
+    id_vars="Provinsi",
+    value_vars=pdrb_cols,
+    var_name="Tahun",
+    value_name="PDRB"
+)
 
-# IPM kolom 2014–2024 ketiga → ambil 11 berikutnya
-ipm_cols = df.columns[23:34]
+tpt_long = df.melt(
+    id_vars="Provinsi",
+    value_vars=tpt_cols,
+    var_name="Tahun",
+    value_name="TPT"
+)
 
-# Convert ke long format
-pdrb_long = df.melt(id_vars="Provinsi", value_vars=pdrb_cols,
-                    var_name="Tahun", value_name="PDRB")
+ipm_long = df.melt(
+    id_vars="Provinsi",
+    value_vars=ipm_cols,
+    var_name="Tahun",
+    value_name="IPM"
+)
 
-tpt_long = df.melt(id_vars="Provinsi", value_vars=tpt_cols,
-                   var_name="Tahun", value_name="TPT")
+data_long = (
+    pdrb_long
+    .merge(tpt_long, on=["Provinsi", "Tahun"])
+    .merge(ipm_long, on=["Provinsi", "Tahun"])
+)
 
-ipm_long = df.melt(id_vars="Provinsi", value_vars=ipm_cols,
-                   var_name="Tahun", value_name="IPM")
-
-# Gabungkan semuanya
-data_long = pdrb_long.merge(tpt_long, on=["Provinsi", "Tahun"])
-data_long = data_long.merge(ipm_long, on=["Provinsi", "Tahun"])
-
-# Pastikan Tahun numerik
 data_long["Tahun"] = data_long["Tahun"].astype(int)
 
 # ================================
-# 3. FILTER USER INPUT
+# 3. FILTER INPUT USER
 # ================================
-provinsi_list = sorted(df["Provinsi"].dropna().astype(str).unique())
+st.sidebar.header("🔍 Filter Data")
 
-provinsi_dipilih = st.selectbox("Pilih Provinsi:", provinsi_list)
-
-indikator = st.selectbox("Pilih Indikator:", ["PDRB", "TPT", "IPM"])
-
-tahun_mulai, tahun_akhir = st.slider(
-    "Pilih rentang tahun:", 2014, 2024, (2014, 2024)
+provinsi = st.sidebar.selectbox(
+    "Pilih Provinsi:",
+    sorted(data_long["Provinsi"].unique())
 )
 
-# Filter data
-df = pd.DataFrame({
-    'tahun': [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-    'nilai': [1 sampai 1000000]
-})
+indikator = st.sidebar.selectbox(
+    "Pilih Indikator:",
+    ["PDRB", "TPT", "IPM"]
+)
 
-st.write(df)
+tahun_range = st.sidebar.slider(
+    "Pilih Rentang Tahun:",
+    2014, 2024, (2014, 2024)
+)
 
-fig, ax = plt.subplots()
-ax.plot(df['tahun'], df['nilai'], marker='o')
-ax.set_title('Contoh Grafik')
+# ================================
+# 4. FILTER DATA SESUAI INPUT
+# ================================
+df_filtered = data_long[
+    (data_long["Provinsi"] == provinsi) &
+    (data_long["Tahun"] >= tahun_range[0]) &
+    (data_long["Tahun"] <= tahun_range[1])
+][["Tahun", indikator]].sort_values("Tahun")
+
+# ================================
+# 5. TAMPILKAN DATA
+# ================================
+st.subheader(f"📌 Data {indikator} – {provinsi}")
+st.dataframe(df_filtered, use_container_width=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.write("### Lima Data Pertama")
+    st.dataframe(df_filtered.head())
+
+with col2:
+    st.write("### Lima Data Terakhir")
+    st.dataframe(df_filtered.tail())
+
+# ================================
+# 6. VISUALISASI GRAFIK
+# ================================
+st.subheader(f"📈 Grafik {indikator} ({provinsi})")
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(
+    df_filtered["Tahun"],
+    df_filtered[indikator],
+    marker="o"
+)
+
+ax.set_xlabel("Tahun")
+ax.set_ylabel(indikator)
+ax.set_title(f"{indikator} Provinsi {provinsi} ({tahun_range[0]}–{tahun_range[1]})")
+ax.grid(True)
 
 st.pyplot(fig)
-
-# ================================
-# 4. TAMPILKAN DATA
-# ================================
-st.write(f"### Data {indikator} - {provinsi_dipilih}")
-st.dataframe(df_filtered)
-
-st.write("### Lima Data Pertama")
-st.write(df_filtered.head())
-
-st.write("### Lima Data Terakhir")
-st.write(df_filtered.tail())
-
-# ================================
-# 5. GRAFIK
-# ================================
-st.write(f"### Grafik {indikator} ({provinsi_dipilih})")
-st.line_chart(df_filtered.set_index("Tahun"))
-
-st.title("Data Indikator Pembangunan")
-
-# Kamus Provinsi
-
-kamus_provinsi = {
-    "AC" : 'Aceh',
-    "SUMUT" : 'Sumatera Utara',
-    "SB" : 'Sumatera Barat',
-    "RI" : 'Riau',
-    "JB" : 'Jambi',
-    "SUMSEL" : 'Sumatera Selatan',
-    "BKL" : 'Bengkulu',
-    "LPG" : 'Lampung',
-    "KEPBB" : 'Kepulauan Bangka Belitung',
-    "KEPRI" : 'Kepulauan Riau',
-    "DKJ" : 'DKI Jakarta',
-    "JABAR" : 'Jawa Barat',
-    "JATENG" : 'Jawa Tengah',
-    "DIY" : 'DI Yogyakarta',
-    "JATIM" : 'Jawa Timur',
-    "BTN" : 'Banten',
-    "BL" : 'Bali',
-    "NTB" : 'Nusa Tenggara Barat',
-    "NTT" : 'Nusa Tenggara Timur',
-    "KALBAR" : 'Kalimantan Barat',
-    "KALTE" : 'Kalimantan Tengah',
-    "KALSEL" : 'Kalimantan Selatan',
-    "KALTIM" : 'Kalimantan Timur',
-    "KALUT" : 'Kalimatan Utara',
-    "SULUT" : 'Sulawesi Utara', 
-    "SULTE" : 'Sulawesi Tengah',
-    "SULSEL" : 'Sulawesi Selatan',
-    "SULTENG" : 'Sulawesi Tenggara',
-    "GOR" : 'Gorontalo',
-    "SULBAR" : 'Sulawesi Barat',
-    "MAL" : 'Maluku',
-    "MALUT" : 'Maluku Utara',
-    "PABAR" : 'Papua Barat',
-    "PA" : 'Papua'
-}
-
-st.title ("Data Indikator Pembangunan")
-
-# PILIH PROVINSI MENGGUNAKAN SORTED ()
-provinsi_dipilih = 'AC'
-provinsi_dipilih = st.selectbox(
-    'Silahkan pilih provinsi:',
-    sorted( kamus_provinsi.keys() )
-)
-
-kode_provinsi = kamus_provinsi[provinsi_dipilih]
-
-# Masukan tanggal
-
-pages = [
-    st.Page(page="pages/page1.py", title="Home", icon="🏡"),
-    st.Page(page="pages/page2.py", title="Visualisasi Data", icon="📊"),
-    st.Page(page="pages/page3.py", title="Settings", icon="⚙️")
-]
-
-pg = st.navigation(
-    pages,
-    position="sidebar",
-    expanded=True
-)
-pg.run()
