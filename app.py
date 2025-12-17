@@ -205,11 +205,16 @@ df_filt["Nilai"] = (
 
 df_filt["Nilai"] = pd.to_numeric(df_filt["Nilai"], errors="coerce")
 
-    fig_heat = px.imshow(
-        pivot,
-        aspect="auto",
-        color_continuous_scale="RdBu"
-    )
+pivot = df_filt.pivot_table(
+    index="Provinsi",
+    columns="Tahun",
+    values="Nilai",
+    aggfunc="mean"
+)
+
+fig_heat = px.imshow(
+    pivot
+)
     st.plotly_chart(fig_heat, use_container_width=True)
 
     st.subheader("📄 Tabel Keseluruhan Data")
