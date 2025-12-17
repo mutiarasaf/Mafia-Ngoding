@@ -15,7 +15,8 @@ st.subheader("📄 Data Mentah (CSV)")
 st.dataframe(df, use_container_width=True)
 
 # Baca data
-df = pd.read_csv("data.csv")
+df = pd.read_csv(r"C:\Mafia-Ngoding\data\data-indikator-pembangunan.csv")
+)
 
 # Pisahkan kolom
 prov = df[['Provinsi']]
