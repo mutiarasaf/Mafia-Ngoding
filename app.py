@@ -14,6 +14,39 @@ df = pd.read_csv("C:/Mafia-Ngoding/data/data-indikator-pembangunan.csv")
 st.subheader("📄 Data Mentah (CSV)")
 st.dataframe(df, use_container_width=True)
 
+# Baca data
+df = pd.read_csv("data.csv")
+
+# Pisahkan kolom
+prov = df[['Provinsi']]
+
+pdrb = df.iloc[:, 1:12]
+pdrb.columns = [f'PDRB_{c}' for c in pdrb.columns]
+
+tpt = df.iloc[:, 12:23]
+tpt.columns = [f'TPT_{c}' for c in tpt.columns]
+
+ipm = df.iloc[:, 23:34]
+ipm.columns = [f'IPM_{c}' for c in ipm.columns]
+
+# Gabungkan kembali
+df_clean = pd.concat([prov, pdrb, tpt, ipm], axis=1)
+
+# Ubah ke format long
+df_long = df_clean.melt(
+    id_vars='Provinsi',
+    var_name='Variabel_Tahun',
+    value_name='Nilai'
+)
+
+# Pisahkan variabel dan tahun
+df_long[['Variabel', 'Tahun']] = df_long['Variabel_Tahun'].str.split('_', expand=True)
+df_long['Tahun'] = df_long['Tahun'].astype(int)
+df_long = df_long.drop(columns='Variabel_Tahun')
+
+# Cek hasil
+print(df_long.head())
+
 # ================================
 # 2. RESHAPE DATA (WIDE → LONG)
 # ================================
