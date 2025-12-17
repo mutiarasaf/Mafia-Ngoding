@@ -9,7 +9,7 @@ st.title("📊 Analisis Indikator Pembangunan 34 Provinsi (2014–2024)")
 # ================================
 # 1. LOAD DATA
 # ================================
-df = pd.read_csv("data/dataindikatorpembangunan.csv")
+df = pd.read_csv("C:/Mafia-Ngoding/data/dataindikatorpembangunan.csv")
 
 st.subheader("📄 Data Mentah (CSV)")
 st.dataframe(df, use_container_width=True)
