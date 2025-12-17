@@ -17,6 +17,9 @@ st.dataframe(df, use_container_width=True)
 # Baca data
 df = pd.read_csv(r"C:\Mafia-Ngoding\data\data-indikator-pembangunan.csv")
 )
+import os
+
+print(os.path.exists(r"C:\Mafia-Ngoding\data\data-indikator-pembangunan.csv"))
 
 # Pisahkan kolom
 prov = df[['Provinsi']]
