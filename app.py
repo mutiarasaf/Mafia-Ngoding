@@ -1,152 +1,168 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-st.set_page_config(page_title="Indikator Pembangunan", layout="wide")
-
-st.title("📊 Analisis Indikator Pembangunan 34 Provinsi (2014–2024)")
-
-# ================================
-# 1. LOAD DATA
-# ================================
-df = pd.read_csv("C:/Mafia-Ngoding/data/data-indikator-pembangunan.csv")
-
-st.subheader("📄 Data Mentah (CSV)")
-st.dataframe(df, use_container_width=True)
-
-# Baca data
-df = pd.read_csv(r"C:\Mafia-Ngoding\data\data-indikator-pembangunan.csv")
-)
-import os
-
-print(os.path.exists(r"C:\Mafia-Ngoding\data\data-indikator-pembangunan.csv"))
-
-# Pisahkan kolom
-prov = df[['Provinsi']]
-
-pdrb = df.iloc[:, 1:12]
-pdrb.columns = [f'PDRB_{c}' for c in pdrb.columns]
-
-tpt = df.iloc[:, 12:23]
-tpt.columns = [f'TPT_{c}' for c in tpt.columns]
-
-ipm = df.iloc[:, 23:34]
-ipm.columns = [f'IPM_{c}' for c in ipm.columns]
-
-# Gabungkan kembali
-df_clean = pd.concat([prov, pdrb, tpt, ipm], axis=1)
-
-# Ubah ke format long
-df_long = df_clean.melt(
-    id_vars='Provinsi',
-    var_name='Variabel_Tahun',
-    value_name='Nilai'
+# =====================================
+# PAGE CONFIG
+# =====================================
+st.set_page_config(
+    page_title="Dashboard Indikator Pembangunan",
+    layout="wide"
 )
 
-# Pisahkan variabel dan tahun
-df_long[['Variabel', 'Tahun']] = df_long['Variabel_Tahun'].str.split('_', expand=True)
-df_long['Tahun'] = df_long['Tahun'].astype(int)
-df_long = df_long.drop(columns='Variabel_Tahun')
+st.title("📊 Dashboard Indikator Pembangunan Provinsi")
+st.caption("PDRB, Tingkat Pengangguran Terbuka (TPT), dan Indeks Pembangunan Manusia (IPM)")
 
-# Cek hasil
-print(df_long.head())
-
-# ================================
-# 2. RESHAPE DATA (WIDE → LONG)
-# ================================
-pdrb_cols = df.columns[1:12]
-tpt_cols  = df.columns[12:23]
-ipm_cols  = df.columns[23:34]
-
-pdrb_long = df.melt(
-    id_vars="Provinsi",
-    value_vars=pdrb_cols,
-    var_name="Tahun",
-    value_name="PDRB"
+# =====================================
+# UPLOAD DATA (CSV / EXCEL)
+# =====================================
+uploaded_file = st.file_uploader(
+    "Upload data indikator pembangunan (CSV / Excel)",
+    type=["csv", "xlsx"]
 )
 
-tpt_long = df.melt(
-    id_vars="Provinsi",
-    value_vars=tpt_cols,
-    var_name="Tahun",
-    value_name="TPT"
+if uploaded_file is None:
+    st.warning("Silakan upload file data terlebih dahulu")
+    st.stop()
+
+@st.cache_data
+def load_data(file):
+    if file.name.endswith(".csv"):
+        return pd.read_csv(file)
+    else:
+        return pd.read_excel(file)
+
+df = load_data(uploaded_file)
+
+# =====================================
+# TRANSFORM WIDE → LONG
+# =====================================
+data = df.melt(
+    id_vars=["Provinsi"],
+    var_name="Variabel",
+    value_name="Nilai"
 )
 
-ipm_long = df.melt(
-    id_vars="Provinsi",
-    value_vars=ipm_cols,
-    var_name="Tahun",
-    value_name="IPM"
+data["Indikator"] = data["Variabel"].str.extract(r"(PDRB|TPT|IPM)")
+data["Tahun"] = data["Variabel"].str.extract(r"(\d{4})").astype(int)
+data = data.dropna()
+
+# =====================================
+# SIDEBAR FILTER
+# =====================================
+st.sidebar.header("🔎 Filter Data")
+
+provinsi = st.sidebar.multiselect(
+    "Pilih Provinsi",
+    options=sorted(data["Provinsi"].unique()),
+    default=sorted(data["Provinsi"].unique())[:6]
 )
 
-data_long = (
-    pdrb_long
-    .merge(tpt_long, on=["Provinsi", "Tahun"])
-    .merge(ipm_long, on=["Provinsi", "Tahun"])
+tahun = st.sidebar.slider(
+    "Rentang Tahun",
+    int(data["Tahun"].min()),
+    int(data["Tahun"].max()),
+    (2018, int(data["Tahun"].max()))
 )
 
-data_long["Tahun"] = data_long["Tahun"].astype(int)
+df_filt = data[
+    (data["Provinsi"].isin(provinsi)) &
+    (data["Tahun"].between(tahun[0], tahun[1]))
+]
 
-# ================================
-# 3. FILTER INPUT USER
-# ================================
-st.sidebar.header("🔍 Filter Data")
+# =====================================
+# FUNCTION ANALISIS OTOMATIS
+# =====================================
+def analisis_otomatis(df, indikator):
+    df_i = df[df["Indikator"] == indikator]
 
-provinsi = st.sidebar.selectbox(
-    "Pilih Provinsi:",
-    sorted(data_long["Provinsi"].unique())
-)
+    awal = df_i["Tahun"].min()
+    akhir = df_i["Tahun"].max()
 
-indikator = st.sidebar.selectbox(
-    "Pilih Indikator:",
-    ["PDRB", "TPT", "IPM"]
-)
+    mean_growth = (
+        df_i.groupby("Provinsi")
+        .apply(lambda x: x.sort_values("Tahun")["Nilai"].pct_change().mean() * 100)
+        .mean()
+    )
 
-tahun_range = st.sidebar.slider(
-    "Pilih Rentang Tahun:",
-    2014, 2024, (2014, 2024)
-)
+    df_last = df_i[df_i["Tahun"] == akhir]
+    tertinggi = df_last.loc[df_last["Nilai"].idxmax()]
+    terendah = df_last.loc[df_last["Nilai"].idxmin()]
 
-# ================================
-# 4. FILTER DATA SESUAI INPUT
-# ================================
-df_filtered = data_long[
-    (data_long["Provinsi"] == provinsi) &
-    (data_long["Tahun"] >= tahun_range[0]) &
-    (data_long["Tahun"] <= tahun_range[1])
-][["Tahun", indikator]].sort_values("Tahun")
+    return f"""
+    Berdasarkan data tahun {awal}–{akhir}, indikator **{indikator}**
+    menunjukkan rata-rata pertumbuhan tahunan sekitar **{mean_growth:.2f}%**.
+    Pada tahun {akhir}, nilai tertinggi dicapai oleh **{tertinggi['Provinsi']}**
+    dengan nilai **{tertinggi['Nilai']:.2f}**, sedangkan nilai terendah
+    tercatat di **{terendah['Provinsi']}** sebesar **{terendah['Nilai']:.2f}**.
+    """
 
-# ================================
-# 5. TAMPILKAN DATA
-# ================================
-st.subheader(f"📌 Data {indikator} – {provinsi}")
-st.dataframe(df_filtered, use_container_width=True)
+# =====================================
+# FUNCTION VIEW PER INDIKATOR
+# =====================================
+def indikator_view(indikator, judul):
+    df_i = df_filt[df_filt["Indikator"] == indikator]
 
-col1, col2 = st.columns(2)
+    if df_i.empty:
+        st.warning("Data tidak tersedia untuk filter yang dipilih")
+        return
 
-with col1:
-    st.write("### Lima Data Pertama")
-    st.dataframe(df_filtered.head())
+    # KPI
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Rata-rata", f"{df_i['Nilai'].mean():,.2f}")
+    c2.metric("Tertinggi", f"{df_i['Nilai'].max():,.2f}")
+    c3.metric("Terendah", f"{df_i['Nilai'].min():,.2f}")
 
-with col2:
-    st.write("### Lima Data Terakhir")
-    st.dataframe(df_filtered.tail())
+    # Narasi
+    st.markdown("### 📝 Analisis Otomatis")
+    st.write(analisis_otomatis(df_filt, indikator))
 
-# ================================
-# 6. VISUALISASI GRAFIK
-# ================================
-st.subheader(f"📈 Grafik {indikator} ({provinsi})")
+    # Tren waktu
+    st.markdown("### 📈 Tren Waktu")
+    fig_line = px.line(
+        df_i,
+        x="Tahun",
+        y="Nilai",
+        color="Provinsi",
+        markers=True
+    )
+    st.plotly_chart(fig_line, use_container_width=True)
 
-fig, ax = plt.subplots(figsize=(10, 5))
-ax.plot(
-    df_filtered["Tahun"],
-    df_filtered[indikator],
-    marker="o"
-)
+    # Ranking
+    st.markdown("### 🏆 Ranking Provinsi (Tahun Terakhir)")
+    tahun_akhir = df_i["Tahun"].max()
+    ranking = (
+        df_i[df_i["Tahun"] == tahun_akhir]
+        .sort_values("Nilai", ascending=False)
+        .reset_index(drop=True)
+    )
+    ranking["Peringkat"] = ranking.index + 1
 
-ax.set_xlabel("Tahun")
-ax.set_ylabel(indikator)
-ax.set_title(f"{indikator} Provinsi {provinsi} ({tahun_range[0]}–{tahun_range[1]})")
-ax.grid(True)
+    st.dataframe(
+        ranking[["Peringkat", "Provinsi", "Nilai"]],
+        use_container_width=True
+    )
 
-st.pyplot(fig)
+    # Growth
+    st.markdown("### 📈 Laju Pertumbuhan Tahunan (%)")
+    df_i = df_i.sort_values(["Provinsi", "Tahun"])
+    df_i["Growth (%)"] = df_i.groupby("Provinsi")["Nilai"].pct_change() * 100
+
+    st.dataframe(
+        df_i[["Provinsi", "Tahun", "Nilai", "Growth (%)"]],
+        use_container_width=True
+    )
+
+# =====================================
+# TABS
+# =====================================
+tab1, tab2, tab3 = st.tabs(["📈 PDRB", "👷 TPT", "🎓 IPM"])
+
+with tab1:
+    indikator_view("PDRB", "Produk Domestik Regional Bruto")
+
+with tab2:
+    indikator_view("TPT", "Tingkat Pengangguran Terbuka")
+
+with tab3:
+    indikator_view("IPM", "Indeks Pembangunan Manusia")
