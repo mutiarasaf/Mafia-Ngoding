@@ -197,12 +197,13 @@ def analisis_provinsi(df, indikator):
 with tab4:
     st.subheader("📊 Heatmap Antar Indikator")
 
-    pivot = df_filt.pivot_table(
-        index="Provinsi",
-        columns="Indikator",
-        values="Nilai",
-        aggfunc="mean"
-    )
+df_filt["Nilai"] = (
+    df_filt["Nilai"]
+    .astype(str)
+    .str.replace(",", "", regex=False)   # hapus koma ribuan
+)
+
+df_filt["Nilai"] = pd.to_numeric(df_filt["Nilai"], errors="coerce")
 
     fig_heat = px.imshow(
         pivot,
