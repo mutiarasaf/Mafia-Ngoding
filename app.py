@@ -162,8 +162,27 @@ with tab3:
         key="prov"
     )
 
-    df_analisis = analisis_provinsi(df_filt, indikator)
-    st.dataframe(df_analisis, use_container_width=True)
+def analisis_provinsi(df, indikator):
+    hasil = []
+
+    for provinsi, d in df.groupby("Provinsi"):
+        d = d.copy()
+
+        # PASTIKAN numerik
+        d["Nilai"] = pd.to_numeric(d["Nilai"], errors="coerce")
+
+        growth = (
+            d.sort_values("Tahun")["Nilai"]
+             .pct_change()
+             .mean() * 100
+        )
+
+        hasil.append({
+            "Provinsi": provinsi,
+            "Rata-rata Pertumbuhan (%)": growth
+        })
+
+    return pd.DataFrame(hasil)
 
     st.markdown("""
 **Interpretasi:**
