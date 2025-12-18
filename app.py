@@ -147,36 +147,82 @@ with tab2:
     st.subheader("📊 Distribusi Tahun Terakhir")
     tahun_akhir = df_i["Tahun"].max()
 
+    df_last = df_i[df_i["Tahun"] == tahun_akhir]
+
     fig2 = px.bar(
-        df_i[df_i["Tahun"] == tahun_akhir],
+        df_last,
         x="Provinsi",
         y="Nilai"
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-# =====================================================
-# FUNCTION ANALISIS PROVINSI
-# =====================================================
-def analisis_provinsi(df, indikator):
-    hasil = []
+    # =================================================
+    # INTERPRETASI OTOMATIS (NARASI)
+    # =================================================
+    st.subheader("📝 Interpretasi Hasil Analisis")
 
-    for provinsi, d in df[df["Indikator"] == indikator].groupby("Provinsi"):
-        if len(d) < 2:
-            continue
+    # ambil 3 tertinggi & terendah
+    top3 = df_last.sort_values("Nilai", ascending=False).head(3)
+    bot3 = df_last.sort_values("Nilai", ascending=True).head(3)
 
-        growth = (
-            d.sort_values("Tahun")["Nilai"]
-             .pct_change()
-             .mean() * 100
-        )
+    if indikator == "PDRB":
+        narasi = f"""
+Berdasarkan data tahun terakhir ({tahun_akhir}), PDRB tertinggi masih
+didominasi oleh provinsi dengan basis ekonomi besar, yaitu
+{top3.iloc[0]['Provinsi']} (±{top3.iloc[0]['Nilai']:,.0f}),
+{top3.iloc[1]['Provinsi']} (±{top3.iloc[1]['Nilai']:,.0f}),
+dan {top3.iloc[2]['Provinsi']} (±{top3.iloc[2]['Nilai']:,.0f}),
+yang tercermin dari tren peningkatan yang relatif stabil pada grafik Tren Waktu
+serta dominasi nilai pada grafik Distribusi Tahun Terakhir.
 
-        hasil.append({
-            "Provinsi": provinsi,
-            "Rata-rata Nilai": d["Nilai"].mean(),
-            "Rata-rata Growth (%)": growth
-        })
+Sebaliknya, PDRB terendah tercatat di
+{bot3.iloc[0]['Provinsi']} (±{bot3.iloc[0]['Nilai']:,.0f}),
+{bot3.iloc[1]['Provinsi']} (±{bot3.iloc[1]['Nilai']:,.0f}),
+dan {bot3.iloc[2]['Provinsi']} (±{bot3.iloc[2]['Nilai']:,.0f}),
+yang menunjukkan keterbatasan kapasitas ekonomi regional.
+        """
 
-    return pd.DataFrame(hasil)
+    elif indikator == "TPT":
+        narasi = f"""
+Dari sisi ketenagakerjaan pada tahun {tahun_akhir}, Tingkat Pengangguran Terbuka (TPT)
+tertinggi justru ditemukan di provinsi dengan aktivitas ekonomi besar, yaitu
+{top3.iloc[0]['Provinsi']} ({top3.iloc[0]['Nilai']:.2f}%),
+{top3.iloc[1]['Provinsi']} ({top3.iloc[1]['Nilai']:.2f}%),
+dan {top3.iloc[2]['Provinsi']} ({top3.iloc[2]['Nilai']:.2f}%).
+
+Sementara itu, TPT terendah tercatat di
+{bot3.iloc[0]['Provinsi']} ({bot3.iloc[0]['Nilai']:.2f}%),
+{bot3.iloc[1]['Provinsi']} ({bot3.iloc[1]['Nilai']:.2f}%),
+dan {bot3.iloc[2]['Provinsi']} ({bot3.iloc[2]['Nilai']:.2f}%),
+yang mengindikasikan kondisi pasar tenaga kerja yang relatif lebih stabil.
+        """
+
+    else:  # IPM
+        narasi = f"""
+Berdasarkan indikator kualitas pembangunan manusia pada tahun {tahun_akhir},
+provinsi dengan IPM tertinggi adalah
+{top3.iloc[0]['Provinsi']} ({top3.iloc[0]['Nilai']:.2f}),
+{top3.iloc[1]['Provinsi']} ({top3.iloc[1]['Nilai']:.2f}),
+dan {top3.iloc[2]['Provinsi']} ({top3.iloc[2]['Nilai']:.2f}),
+yang mencerminkan capaian lebih baik dalam aspek pendidikan, kesehatan,
+dan standar hidup layak.
+
+Sebaliknya, IPM terendah masih berada di
+{bot3.iloc[0]['Provinsi']} ({bot3.iloc[0]['Nilai']:.2f}),
+{bot3.iloc[1]['Provinsi']} ({bot3.iloc[1]['Nilai']:.2f}),
+dan {bot3.iloc[2]['Provinsi']} ({bot3.iloc[2]['Nilai']:.2f}),
+menunjukkan bahwa kualitas pembangunan manusia antarwilayah
+masih belum merata.
+        """
+
+    st.markdown(narasi)
+
+    st.markdown("""
+Secara keseluruhan, temuan ini menunjukkan bahwa pertumbuhan ekonomi yang tinggi
+belum sepenuhnya diikuti oleh pemerataan kesempatan kerja dan peningkatan kualitas
+pembangunan manusia, sehingga ketimpangan antarwilayah di Indonesia
+masih bersifat struktural dan memerlukan intervensi kebijakan yang lebih terarah.
+    """)
 
 # =====================================================
 # TAB 3 – ANALISIS PER PROVINSI
