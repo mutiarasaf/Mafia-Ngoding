@@ -45,7 +45,6 @@ data["Indikator"] = data["Variabel"].str.extract(r"(PDRB|TPT|IPM)")
 data["Tahun"] = data["Variabel"].str.extract(r"(\d{4})").astype(int)
 data = data.dropna()
 
-# pastikan nilai numerik
 data["Nilai"] = (
     data["Nilai"]
     .astype(str)
@@ -104,33 +103,18 @@ Analisis ini berfokus pada tiga indikator utama:
 - **Tingkat Pengangguran Terbuka (TPT)**
 - **Indeks Pembangunan Manusia (IPM)**
 
-Periode analisis mencakup tahun **2014–2024**, yang diharapkan dapat memberikan
-gambaran dinamika pembangunan Indonesia secara komprehensif serta menjadi
-bahan pendukung dalam perumusan kebijakan publik dan kajian akademik.
+Periode analisis mencakup tahun **2014–2024**.
     """)
 
     st.markdown("""
 ### *Deskripsi Data*
 
-Data yang digunakan dalam dashboard ini memiliki karakteristik sebagai berikut:
+- **Provinsi**: 34 provinsi Indonesia  
+- **PDRB (Harga Konstan)**: Indikator pertumbuhan ekonomi riil  
+- **TPT**: Indikator ketenagakerjaan  
+- **IPM**: Indikator pembangunan manusia  
 
-- **Provinsi**  
-  Seluruh provinsi di Indonesia (34 provinsi).
-
-- **PDRB (Harga Konstan)**  
-  Menggambarkan nilai tambah barang dan jasa yang dihasilkan suatu wilayah
-  dengan menghilangkan pengaruh inflasi, sehingga mencerminkan pertumbuhan
-  ekonomi riil.
-
-- **Tingkat Pengangguran Terbuka (TPT)**  
-  Persentase jumlah pengangguran terhadap total angkatan kerja, yang
-  mencerminkan kondisi pasar tenaga kerja di masing-masing provinsi.
-
-- **Indeks Pembangunan Manusia (IPM)**  
-  Indikator komposit yang mengukur kualitas pembangunan manusia dari aspek
-  kesehatan, pendidikan, dan standar hidup layak.
-
-**Sumber data**: Badan Pusat Statistik (BPS), data diolah.
+Sumber data: **BPS (diolah)**
     """)
 
 # =====================================================
@@ -147,82 +131,58 @@ with tab2:
     st.subheader("📊 Distribusi Tahun Terakhir")
     tahun_akhir = df_i["Tahun"].max()
 
-    df_last = df_i[df_i["Tahun"] == tahun_akhir]
-
     fig2 = px.bar(
-        df_last,
+        df_i[df_i["Tahun"] == tahun_akhir],
         x="Provinsi",
         y="Nilai"
     )
     st.plotly_chart(fig2, use_container_width=True)
 
-    # =================================================
-    # INTERPRETASI OTOMATIS (NARASI)
-    # =================================================
-    st.subheader("📝 Interpretasi Hasil Analisis")
-
-    # ambil 3 tertinggi & terendah
-    top3 = df_last.sort_values("Nilai", ascending=False).head(3)
-    bot3 = df_last.sort_values("Nilai", ascending=True).head(3)
-
-    if indikator == "PDRB":
-        narasi = f"""
-Berdasarkan data tahun terakhir ({tahun_akhir}), PDRB tertinggi masih
-didominasi oleh provinsi dengan basis ekonomi besar, yaitu
-{top3.iloc[0]['Provinsi']} (±{top3.iloc[0]['Nilai']:,.0f}),
-{top3.iloc[1]['Provinsi']} (±{top3.iloc[1]['Nilai']:,.0f}),
-dan {top3.iloc[2]['Provinsi']} (±{top3.iloc[2]['Nilai']:,.0f}),
-yang tercermin dari tren peningkatan yang relatif stabil pada grafik Tren Waktu
-serta dominasi nilai pada grafik Distribusi Tahun Terakhir.
-
-Sebaliknya, PDRB terendah tercatat di
-{bot3.iloc[0]['Provinsi']} (±{bot3.iloc[0]['Nilai']:,.0f}),
-{bot3.iloc[1]['Provinsi']} (±{bot3.iloc[1]['Nilai']:,.0f}),
-dan {bot3.iloc[2]['Provinsi']} (±{bot3.iloc[2]['Nilai']:,.0f}),
-yang menunjukkan keterbatasan kapasitas ekonomi regional.
-        """
-
-    elif indikator == "TPT":
-        narasi = f"""
-Dari sisi ketenagakerjaan pada tahun {tahun_akhir}, Tingkat Pengangguran Terbuka (TPT)
-tertinggi justru ditemukan di provinsi dengan aktivitas ekonomi besar, yaitu
-{top3.iloc[0]['Provinsi']} ({top3.iloc[0]['Nilai']:.2f}%),
-{top3.iloc[1]['Provinsi']} ({top3.iloc[1]['Nilai']:.2f}%),
-dan {top3.iloc[2]['Provinsi']} ({top3.iloc[2]['Nilai']:.2f}%).
-
-Sementara itu, TPT terendah tercatat di
-{bot3.iloc[0]['Provinsi']} ({bot3.iloc[0]['Nilai']:.2f}%),
-{bot3.iloc[1]['Provinsi']} ({bot3.iloc[1]['Nilai']:.2f}%),
-dan {bot3.iloc[2]['Provinsi']} ({bot3.iloc[2]['Nilai']:.2f}%),
-yang mengindikasikan kondisi pasar tenaga kerja yang relatif lebih stabil.
-        """
-
-    else:  # IPM
-        narasi = f"""
-Berdasarkan indikator kualitas pembangunan manusia pada tahun {tahun_akhir},
-provinsi dengan IPM tertinggi adalah
-{top3.iloc[0]['Provinsi']} ({top3.iloc[0]['Nilai']:.2f}),
-{top3.iloc[1]['Provinsi']} ({top3.iloc[1]['Nilai']:.2f}),
-dan {top3.iloc[2]['Provinsi']} ({top3.iloc[2]['Nilai']:.2f}),
-yang mencerminkan capaian lebih baik dalam aspek pendidikan, kesehatan,
-dan standar hidup layak.
-
-Sebaliknya, IPM terendah masih berada di
-{bot3.iloc[0]['Provinsi']} ({bot3.iloc[0]['Nilai']:.2f}),
-{bot3.iloc[1]['Provinsi']} ({bot3.iloc[1]['Nilai']:.2f}),
-dan {bot3.iloc[2]['Provinsi']} ({bot3.iloc[2]['Nilai']:.2f}),
-menunjukkan bahwa kualitas pembangunan manusia antarwilayah
-masih belum merata.
-        """
-
-    st.markdown(narasi)
-
+    # ================= INTERPRETASI =================
     st.markdown("""
-Secara keseluruhan, temuan ini menunjukkan bahwa pertumbuhan ekonomi yang tinggi
-belum sepenuhnya diikuti oleh pemerataan kesempatan kerja dan peningkatan kualitas
-pembangunan manusia, sehingga ketimpangan antarwilayah di Indonesia
-masih bersifat struktural dan memerlukan intervensi kebijakan yang lebih terarah.
+### 📝 Interpretasi Hasil Analisis
+
+Berdasarkan data tahun terakhir, PDRB tertinggi masih didominasi oleh provinsi di Pulau Jawa, 
+yaitu DKI Jakarta (±2.151.041), Jawa Timur (±1.935.810), dan Jawa Barat (±1.752.071), 
+yang juga terlihat jelas pada grafik Distribusi Tahun Terakhir dan tren peningkatan yang stabil 
+pada grafik Tren Waktu. Sebaliknya, PDRB terendah tercatat di Papua (±24.874), Gorontalo (±32.950), 
+dan Sulawesi Barat (±37.088).
+
+Dari sisi ketenagakerjaan, TPT tertinggi justru terdapat di provinsi dengan ekonomi besar 
+seperti Jawa Barat (6,75%), Banten (6,68%), dan DKI Jakarta (6,21%), sedangkan TPT terendah 
+berada di Sulawesi Barat (2,68%) dan NTB (2,73%).
+
+Sementara itu, IPM tertinggi dicapai oleh DKI Jakarta (83,08) dan DI Yogyakarta (81,55), 
+sedangkan IPM terendah masih berada di Papua Barat (67,02) dan NTT (67,39).
+
+Temuan ini menunjukkan bahwa pertumbuhan ekonomi yang tinggi belum sepenuhnya diikuti oleh 
+pemerataan kesempatan kerja dan kualitas pembangunan manusia, sehingga ketimpangan antarwilayah 
+masih bersifat struktural.
     """)
+
+# =====================================================
+# FUNCTION ANALISIS PROVINSI
+# =====================================================
+def analisis_provinsi(df, indikator):
+    hasil = []
+
+    for provinsi, d in df[df["Indikator"] == indikator].groupby("Provinsi"):
+        if len(d) < 2:
+            continue
+
+        growth = (
+            d.sort_values("Tahun")["Nilai"]
+             .pct_change()
+             .mean() * 100
+        )
+
+        hasil.append({
+            "Provinsi": provinsi,
+            "Rata-rata Nilai": d["Nilai"].mean(),
+            "Rata-rata Growth (%)": growth
+        })
+
+    return pd.DataFrame(hasil)
 
 # =====================================================
 # TAB 3 – ANALISIS PER PROVINSI
@@ -235,16 +195,7 @@ with tab3:
     )
 
     hasil_prov = analisis_provinsi(df_filt, indikator_p)
-
     st.dataframe(hasil_prov, use_container_width=True)
-
-    st.markdown("""
-**Interpretasi:**
-- Rata-rata nilai menunjukkan posisi relatif provinsi
-- Growth (%) mencerminkan dinamika pembangunan antar waktu
-- Provinsi dengan pertumbuhan tinggi namun level indikator rendah
-  memerlukan perhatian kebijakan yang lebih besar
-    """)
 
 # =====================================================
 # TAB 4 – HEATMAP & DATA KESELURUHAN
